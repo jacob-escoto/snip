@@ -48,6 +48,7 @@ public class Notepad extends javax.swing.JFrame {
         newFile_jmi = new javax.swing.JMenuItem();
         openFile_jmi = new javax.swing.JMenuItem();
         saveFile_jmi = new javax.swing.JMenuItem();
+        saveAs_jmi = new javax.swing.JMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setLocationByPlatform(true);
@@ -100,6 +101,15 @@ public class Notepad extends javax.swing.JFrame {
         });
         file_menu.add(saveFile_jmi);
 
+        saveAs_jmi.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S, java.awt.event.InputEvent.SHIFT_DOWN_MASK | java.awt.event.InputEvent.CTRL_DOWN_MASK));
+        saveAs_jmi.setText("Save As");
+        saveAs_jmi.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                saveAs_jmiActionPerformed(evt);
+            }
+        });
+        file_menu.add(saveAs_jmi);
+
         menubar.add(file_menu);
 
         setJMenuBar(menubar);
@@ -108,7 +118,23 @@ public class Notepad extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void newFile_jmiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_newFile_jmiActionPerformed
+        if (textArea.getText().length() != 0 && fileOpened == null) {
+            int confirm = JOptionPane.showConfirmDialog(this, "Do you want to save the file?", "Save File", JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE);
 
+            if (confirm == JOptionPane.YES_OPTION) {
+                saveFile_jmiActionPerformed(evt);
+                if (fileOpened == null) {
+                    return;
+                }
+            } else if (confirm == JOptionPane.CANCEL_OPTION) {
+                return;
+            }
+        }
+
+        textArea.setText("");
+        fileOpened = null;
+        this.setTitle("Untitled - Snip");
+        setSyntax();
     }//GEN-LAST:event_newFile_jmiActionPerformed
 
     private void openFile_jmiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_openFile_jmiActionPerformed
@@ -116,16 +142,21 @@ public class Notepad extends javax.swing.JFrame {
         fileChooser.setDialogTitle("Open File");
         if (fileChooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
             try (BufferedReader br = new BufferedReader(new FileReader(fileChooser.getSelectedFile(), StandardCharsets.UTF_8))) {
+                String content = "";
                 String line;
                 while ((line = br.readLine()) != null) {
-                    textArea.append(line + '\n');
+                    content += line + '\n';
                 }
-                if (textArea.getText().endsWith("\n")) {
-                    textArea.setText(textArea.getText().substring(0, textArea.getText().lastIndexOf("\n")));
+                if (content.endsWith("\n")) {
+                    content = content.substring(0, content.length() - 1);
                 }
+                textArea.setText(content);
+                textArea.setCaretPosition(0);
+
                 fileOpened = fileChooser.getSelectedFile();
                 this.setTitle(fileOpened.getName() + " - Snip");
                 setSyntax();
+
             } catch (IOException ex) {
                 JOptionPane.showMessageDialog(this, "Unexpected Error while opening the file!" + ex.getMessage(), "ERROR", JOptionPane.ERROR_MESSAGE);
                 Logger.getLogger(Notepad.class.getName()).log(Level.SEVERE, null, ex);
@@ -134,8 +165,59 @@ public class Notepad extends javax.swing.JFrame {
     }//GEN-LAST:event_openFile_jmiActionPerformed
 
     private void saveFile_jmiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveFile_jmiActionPerformed
-        // TODO add your handling code here:
+        if (fileOpened == null) {
+            saveAs_jmiActionPerformed(evt);
+            return;
+        }
+        try {
+            String content = textArea.getText();
+            java.nio.file.Files.write(fileOpened.toPath(), content.getBytes(StandardCharsets.UTF_8));
+            this.setTitle(fileOpened.getName() + " - Snip");
+        } catch (IOException ex) {
+            JOptionPane.showMessageDialog(this, "Error saving file: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            Logger.getLogger(Notepad.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }//GEN-LAST:event_saveFile_jmiActionPerformed
+
+    private void saveAs_jmiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveAs_jmiActionPerformed
+        fileChooser.setDialogTitle("Save File");
+
+        if (fileOpened != null) {
+            fileChooser.setSelectedFile(fileOpened);
+        } else {
+            fileChooser.setSelectedFile(new File("Untitled.txt"));
+        }
+        if (fileChooser.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
+            File fileToSave = fileChooser.getSelectedFile();
+
+            if (!fileToSave.getName().contains(".")) {
+                fileToSave = new File(fileToSave.getParent(), fileToSave.getName() + ".txt");
+            }
+            if (fileToSave.exists()) {
+                int confirm = JOptionPane.showConfirmDialog(this,
+                        "File already exists. Do you want to overwrite it?",
+                        "Confirm Overwrite",
+                        JOptionPane.YES_NO_OPTION,
+                        JOptionPane.WARNING_MESSAGE);
+
+                if (confirm != JOptionPane.YES_OPTION) {
+                    return;
+                }
+            }
+
+            try {
+                String content = textArea.getText();
+                java.nio.file.Files.write(fileToSave.toPath(), content.getBytes(StandardCharsets.UTF_8));
+                fileOpened = fileToSave;
+                this.setTitle(fileOpened.getName() + " - Snip");
+                setSyntax();
+                JOptionPane.showMessageDialog(this, "File saved successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
+            } catch (IOException ex) {
+                JOptionPane.showMessageDialog(this, "Error saving file: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                Logger.getLogger(Notepad.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+    }//GEN-LAST:event_saveAs_jmiActionPerformed
 
     public static void main(String args[]) {
         try {
@@ -227,6 +309,7 @@ public class Notepad extends javax.swing.JFrame {
     private javax.swing.JMenuBar menubar;
     private javax.swing.JMenuItem newFile_jmi;
     private javax.swing.JMenuItem openFile_jmi;
+    private javax.swing.JMenuItem saveAs_jmi;
     private javax.swing.JMenuItem saveFile_jmi;
     private javax.swing.JPanel toolbar;
     // End of variables declaration//GEN-END:variables
