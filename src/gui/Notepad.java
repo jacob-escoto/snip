@@ -2,7 +2,10 @@ package gui;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Graphics2D;
 import java.awt.Point;
+import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -10,6 +13,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileNameExtensionFilter;
@@ -22,7 +26,7 @@ import org.fife.ui.rsyntaxtextarea.SyntaxConstants;
 import org.fife.ui.rtextarea.RTextScrollPane;
 
 public class Notepad extends javax.swing.JFrame {
-    
+
     private Point mouse;
     private Setting setting;
     private final RSyntaxTextArea textArea;
@@ -30,7 +34,7 @@ public class Notepad extends javax.swing.JFrame {
     private File fileOpened;
     private final JFileChooser fileChooser = new JFileChooser();
     private final UndoManager undoManager = new UndoManager();
-    
+
     public Notepad() {
         setting = Setting.loadFromFile();
         try {
@@ -42,20 +46,20 @@ public class Notepad extends javax.swing.JFrame {
         } catch (javax.swing.UnsupportedLookAndFeelException ex) {
             System.err.println("Error al cargar tema inicial: " + ex.getMessage());
         }
-        
+
         initComponents();
-        
+
         textArea = new RSyntaxTextArea(20, 60);
         textArea.setCodeFoldingEnabled(true);
         textArea.getDocument().addUndoableEditListener(undoManager);
         scrollPane = new RTextScrollPane(textArea);
         this.add(scrollPane, BorderLayout.CENTER);
-        
+
         setSyntax();
         setFileFilters();
         setTheme();
     }
-    
+
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
@@ -68,6 +72,7 @@ public class Notepad extends javax.swing.JFrame {
         light_jrb = new javax.swing.JRadioButton();
         dark_jrb = new javax.swing.JRadioButton();
         toolbar = new javax.swing.JPanel();
+        jLabel4 = new javax.swing.JLabel();
         settings_btn = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
         capture_btn = new javax.swing.JLabel();
@@ -78,12 +83,14 @@ public class Notepad extends javax.swing.JFrame {
         saveFile_jmi = new javax.swing.JMenuItem();
         saveAs_jmi = new javax.swing.JMenuItem();
         edit_menu = new javax.swing.JMenu();
+        undo_jmi = new javax.swing.JMenuItem();
+        redo_jmi = new javax.swing.JMenuItem();
+        jSeparator2 = new javax.swing.JPopupMenu.Separator();
         copy_jmi = new javax.swing.JMenuItem();
         paste_jmi = new javax.swing.JMenuItem();
         cut_jmi = new javax.swing.JMenuItem();
+        jSeparator1 = new javax.swing.JPopupMenu.Separator();
         selectAll_jmi = new javax.swing.JMenuItem();
-        undo_jmi = new javax.swing.JMenuItem();
-        redo_jmi = new javax.swing.JMenuItem();
 
         settings_jd.setMaximumSize(new java.awt.Dimension(391, 459));
         settings_jd.setMinimumSize(new java.awt.Dimension(391, 459));
@@ -187,9 +194,12 @@ public class Notepad extends javax.swing.JFrame {
         toolbar.setBackground(new java.awt.Color(51, 51, 51));
         toolbar.setMinimumSize(new java.awt.Dimension(808, 45));
         toolbar.setPreferredSize(new java.awt.Dimension(808, 45));
-        toolbar.setLayout(new javax.swing.BoxLayout(toolbar, javax.swing.BoxLayout.LINE_AXIS));
+        toolbar.setLayout(new javax.swing.BoxLayout(toolbar, javax.swing.BoxLayout.X_AXIS));
 
-        settings_btn.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/dark/gears_b.png"))); // NOI18N
+        jLabel4.setText("    ");
+        toolbar.add(jLabel4);
+
+        settings_btn.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/dark/gears.png"))); // NOI18N
         settings_btn.setToolTipText("Settings");
         settings_btn.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
@@ -203,6 +213,11 @@ public class Notepad extends javax.swing.JFrame {
 
         capture_btn.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/dark/photo-capture.png"))); // NOI18N
         capture_btn.setToolTipText("Screenshot");
+        capture_btn.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                capture_btnMouseClicked(evt);
+            }
+        });
         toolbar.add(capture_btn);
 
         getContentPane().add(toolbar, java.awt.BorderLayout.PAGE_START);
@@ -249,6 +264,25 @@ public class Notepad extends javax.swing.JFrame {
 
         edit_menu.setText("Edit");
 
+        undo_jmi.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_Z, java.awt.event.InputEvent.CTRL_DOWN_MASK));
+        undo_jmi.setText("Undo");
+        undo_jmi.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                undo_jmiActionPerformed(evt);
+            }
+        });
+        edit_menu.add(undo_jmi);
+
+        redo_jmi.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_Y, java.awt.event.InputEvent.CTRL_DOWN_MASK));
+        redo_jmi.setText("Redo");
+        redo_jmi.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                redo_jmiActionPerformed(evt);
+            }
+        });
+        edit_menu.add(redo_jmi);
+        edit_menu.add(jSeparator2);
+
         copy_jmi.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_C, java.awt.event.InputEvent.CTRL_DOWN_MASK));
         copy_jmi.setText("Copy");
         copy_jmi.addActionListener(new java.awt.event.ActionListener() {
@@ -275,6 +309,7 @@ public class Notepad extends javax.swing.JFrame {
             }
         });
         edit_menu.add(cut_jmi);
+        edit_menu.add(jSeparator1);
 
         selectAll_jmi.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_A, java.awt.event.InputEvent.CTRL_DOWN_MASK));
         selectAll_jmi.setText("Select All");
@@ -284,24 +319,6 @@ public class Notepad extends javax.swing.JFrame {
             }
         });
         edit_menu.add(selectAll_jmi);
-
-        undo_jmi.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_Z, java.awt.event.InputEvent.CTRL_DOWN_MASK));
-        undo_jmi.setText("Undo");
-        undo_jmi.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                undo_jmiActionPerformed(evt);
-            }
-        });
-        edit_menu.add(undo_jmi);
-
-        redo_jmi.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_Y, java.awt.event.InputEvent.CTRL_DOWN_MASK));
-        redo_jmi.setText("Redo");
-        redo_jmi.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                redo_jmiActionPerformed(evt);
-            }
-        });
-        edit_menu.add(redo_jmi);
 
         menubar.add(edit_menu);
 
@@ -313,7 +330,7 @@ public class Notepad extends javax.swing.JFrame {
     private void newFile_jmiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_newFile_jmiActionPerformed
         if (textArea.getText().length() != 0 && fileOpened == null) {
             int confirm = JOptionPane.showConfirmDialog(this, "Do you want to save the file?", "Save File", JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE);
-            
+
             if (confirm == JOptionPane.YES_OPTION) {
                 saveFile_jmiActionPerformed(evt);
                 if (fileOpened == null) {
@@ -323,7 +340,7 @@ public class Notepad extends javax.swing.JFrame {
                 return;
             }
         }
-        
+
         textArea.setText("");
         fileOpened = null;
         this.setTitle("Untitled - Snip");
@@ -345,11 +362,11 @@ public class Notepad extends javax.swing.JFrame {
                 }
                 textArea.setText(content);
                 textArea.setCaretPosition(0);
-                
+
                 fileOpened = fileChooser.getSelectedFile();
                 this.setTitle(fileOpened.getName() + " - Snip");
                 setSyntax();
-                
+
             } catch (IOException ex) {
                 JOptionPane.showMessageDialog(this, "Unexpected Error while opening the file!" + ex.getMessage(), "ERROR", JOptionPane.ERROR_MESSAGE);
                 Logger.getLogger(Notepad.class.getName()).log(Level.SEVERE, null, ex);
@@ -374,7 +391,7 @@ public class Notepad extends javax.swing.JFrame {
 
     private void saveAs_jmiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveAs_jmiActionPerformed
         fileChooser.setDialogTitle("Save File");
-        
+
         if (fileOpened != null) {
             fileChooser.setSelectedFile(fileOpened);
         } else {
@@ -382,7 +399,7 @@ public class Notepad extends javax.swing.JFrame {
         }
         if (fileChooser.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
             File fileToSave = fileChooser.getSelectedFile();
-            
+
             if (!fileToSave.getName().contains(".")) {
                 fileToSave = new File(fileToSave.getParent(), fileToSave.getName() + ".txt");
             }
@@ -392,12 +409,12 @@ public class Notepad extends javax.swing.JFrame {
                         "Confirm Overwrite",
                         JOptionPane.YES_NO_OPTION,
                         JOptionPane.WARNING_MESSAGE);
-                
+
                 if (confirm != JOptionPane.YES_OPTION) {
                     return;
                 }
             }
-            
+
             try {
                 String content = textArea.getText();
                 java.nio.file.Files.write(fileToSave.toPath(), content.getBytes(StandardCharsets.UTF_8));
@@ -490,13 +507,49 @@ public class Notepad extends javax.swing.JFrame {
     }//GEN-LAST:event_selectAll_jmiActionPerformed
 
     private void undo_jmiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_undo_jmiActionPerformed
-        if (undoManager.canUndo()) undoManager.undo();
+        if (undoManager.canUndo())
+            undoManager.undo();
     }//GEN-LAST:event_undo_jmiActionPerformed
 
     private void redo_jmiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_redo_jmiActionPerformed
-        if (undoManager.canRedo()) undoManager.redo();
+        if (undoManager.canRedo())
+            undoManager.redo();
     }//GEN-LAST:event_redo_jmiActionPerformed
-    
+
+    private void capture_btnMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_capture_btnMouseClicked
+        try {
+            
+            Dimension dimension = textArea.getPreferredSize();
+            textArea.getCaret().setVisible(false);
+            BufferedImage img = new BufferedImage(dimension.width, dimension.height, BufferedImage.TYPE_INT_RGB);
+            Graphics2D g2 = img.createGraphics();
+
+            textArea.setSize(dimension);
+            textArea.printAll(g2);
+            g2.dispose();
+
+           JFileChooser chooserImage = new JFileChooser();
+            chooserImage.setDialogTitle("Guardar imagen");
+            chooserImage.setFileFilter(new FileNameExtensionFilter("PNG File (*.png)", "png"));
+
+            int userSelection = chooserImage.showSaveDialog(this);
+            if (userSelection == JFileChooser.APPROVE_OPTION) {
+                File selectedFile = chooserImage.getSelectedFile();
+
+                if (!selectedFile.getName().toLowerCase().endsWith(".png")) {
+                    selectedFile = new File(selectedFile.getAbsolutePath() + ".png");
+                }
+                
+                ImageIO.write(img, "png", selectedFile);
+                JOptionPane.showMessageDialog(this, "Imagen guardada en:\n" + selectedFile.getAbsolutePath());
+            }
+        } catch (IOException ex) {
+            Logger.getLogger(Notepad.class.getName()).log(Level.SEVERE, null, ex);
+            JOptionPane.showMessageDialog(this, "Error al guardar la imagen: " + ex.getMessage());
+        }
+        textArea.getCaret().setVisible(true); 
+    }//GEN-LAST:event_capture_btnMouseClicked
+
     private void setTheme() {
         if (setting.isDarkTheme()) {
             textArea.setBackground(Color.decode("#313233"));
@@ -504,13 +557,13 @@ public class Notepad extends javax.swing.JFrame {
             textArea.setCaretColor(Color.WHITE);
             textArea.setSelectionColor(Color.decode("#F8EF9B"));
             textArea.setCurrentLineHighlightColor(Color.decode("#505050"));
-            
+
             scrollPane.getGutter().setBackground(Color.decode("#2B2B2B"));
             scrollPane.getGutter().setBorderColor(Color.decode("#404040"));
             scrollPane.getGutter().setLineNumberColor(Color.decode("#999999"));
-            
+
             toolbar.setBackground(new Color(51, 51, 51));
-            settings_btn.setIcon(new ImageIcon(getClass().getResource("/icons/dark/gears_b.png")));
+            settings_btn.setIcon(new ImageIcon(getClass().getResource("/icons/dark/gears.png")));
             capture_btn.setIcon(new ImageIcon(getClass().getResource("/icons/dark/photo-capture.png")));
         } else {
             textArea.setBackground(Color.decode("#FFFFFF"));
@@ -518,16 +571,16 @@ public class Notepad extends javax.swing.JFrame {
             textArea.setCaretColor(Color.BLACK);
             textArea.setSelectionColor(Color.decode("#BEFBFE"));
             textArea.setCurrentLineHighlightColor(Color.decode("#F0F4F4"));
-            
+
             scrollPane.getGutter().setBackground(Color.decode("#F0F0F0"));
             scrollPane.getGutter().setBorderColor(Color.decode("#D0D0D0"));
             scrollPane.getGutter().setLineNumberColor(Color.decode("#787878"));
-            
+
             toolbar.setBackground(Color.WHITE);
             settings_btn.setIcon(new ImageIcon(getClass().getResource("/icons/light/gears.png")));
             capture_btn.setIcon(new ImageIcon(getClass().getResource("/icons/light/photo-capture.png")));
         }
-        
+
         try {
             if (setting.isDarkTheme()) {
                 javax.swing.UIManager.setLookAndFeel(new com.formdev.flatlaf.FlatDarkLaf());
@@ -537,12 +590,12 @@ public class Notepad extends javax.swing.JFrame {
         } catch (javax.swing.UnsupportedLookAndFeelException ex) {
             System.err.println("Error al cargar tema inicial: " + ex.getMessage());
         }
-        
+
         SwingUtilities.updateComponentTreeUI(this);
         this.revalidate();
         this.repaint();
     }
-    
+
     private String getFileExtension() {
         if (fileOpened == null) {
             return "";
@@ -551,7 +604,7 @@ public class Notepad extends javax.swing.JFrame {
             return ((lastDot != -1) ? fileOpened.getName().substring(lastDot + 1) : "");
         }
     }
-    
+
     private void setFileFilters() {
         FileNameExtensionFilter txtFilter = new FileNameExtensionFilter("Text Files (*.txt)", "txt");
         FileNameExtensionFilter cFilter = new FileNameExtensionFilter("C, C++, C# Files (*.c, *.cpp, *.cs)", "c", "cpp", "cs");
@@ -562,16 +615,16 @@ public class Notepad extends javax.swing.JFrame {
         FileNameExtensionFilter jsonFilter = new FileNameExtensionFilter("JSON Files (*.json)", "json");
         FileNameExtensionFilter mdFilter = new FileNameExtensionFilter("Markdown Files (*.md)", "md");
         FileNameExtensionFilter csvFilter = new FileNameExtensionFilter("CSV (*.csv)", "csv");
-        
+
         FileNameExtensionFilter[] filters = {txtFilter, cFilter, webFilter, pyFilter, javaFilter, phpFilter, jsonFilter, mdFilter, csvFilter};
         for (FileNameExtensionFilter filter : filters) {
             fileChooser.addChoosableFileFilter(filter);
         }
     }
-    
+
     private void setSyntax() {
         String fileType = getFileExtension();
-        
+
         switch (fileType) {
             case "java" ->
                 textArea.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_JAVA);
@@ -601,14 +654,14 @@ public class Notepad extends javax.swing.JFrame {
                 textArea.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_NONE);
         }
     }
-    
+
     public static void main(String[] args) {
         java.awt.EventQueue.invokeLater(() -> {
             Notepad snip = new Notepad();
             snip.setLocationRelativeTo(null);
             snip.setVisible(true);
         });
-        
+
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel capture_btn;
@@ -621,7 +674,10 @@ public class Notepad extends javax.swing.JFrame {
     private javax.swing.JPanel header;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
     private javax.swing.JPanel jPanel1;
+    private javax.swing.JPopupMenu.Separator jSeparator1;
+    private javax.swing.JPopupMenu.Separator jSeparator2;
     private javax.swing.JRadioButton light_jrb;
     private javax.swing.JMenuBar menubar;
     private javax.swing.JMenuItem newFile_jmi;
