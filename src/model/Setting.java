@@ -14,12 +14,15 @@ public class Setting implements Serializable {
     private static final String SETTINGS_FILE = "settings.cfgt";
 
     private boolean isDarkTheme;
+    private boolean showLineNumbers;
+    private boolean showToolbar;
 
     public Setting() {
         this.isDarkTheme = false;
+        this.showLineNumbers = true;
+        this.showToolbar = true;
     }
 
-    // Getters y Setters
     public boolean isDarkTheme() {
         return isDarkTheme;
     }
@@ -28,6 +31,22 @@ public class Setting implements Serializable {
         this.isDarkTheme = isDarkTheme;
     }
 
+    public boolean getShowLineNumbers() {
+        return showLineNumbers;
+    }
+
+    public void setShowLineNumbers(boolean showLineNumbers) {
+        this.showLineNumbers = showLineNumbers;
+    }
+    
+    public boolean getShowToolbar() {
+        return showToolbar;
+    }
+
+    public void setShowToolbar(boolean showToolbar) {
+        this.showToolbar = showToolbar;
+    }
+    
     public static File getSettingsFile() {
         File folder = new File(System.getProperty("user.home"), APP_FOLDER);
         if (!folder.exists()) {

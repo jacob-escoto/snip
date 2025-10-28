@@ -32,7 +32,7 @@ public class Notepad extends javax.swing.JFrame {
     private final RSyntaxTextArea textArea;
     private final RTextScrollPane scrollPane;
     private File fileOpened;
-    private final JFileChooser fileChooser = new JFileChooser();
+    private JFileChooser fileChooser;
     private final UndoManager undoManager = new UndoManager();
 
     public Notepad() {
@@ -46,15 +46,25 @@ public class Notepad extends javax.swing.JFrame {
         } catch (javax.swing.UnsupportedLookAndFeelException ex) {
             System.err.println("Error al cargar tema inicial: " + ex.getMessage());
         }
-
         initComponents();
+        fileChooser = new JFileChooser();
+
+        if (setting.isDarkTheme()) {
+            dark_jrb.setSelected(true);
+        } else {
+            light_jrb.setSelected(true);
+        }
 
         textArea = new RSyntaxTextArea(20, 60);
         textArea.setCodeFoldingEnabled(true);
         textArea.getDocument().addUndoableEditListener(undoManager);
         scrollPane = new RTextScrollPane(textArea);
         this.add(scrollPane, BorderLayout.CENTER);
+        scrollPane.setLineNumbersEnabled(setting.getShowLineNumbers());
+        checkbox_lineNumbers.setSelected(setting.getShowLineNumbers());
 
+        toolbar.setVisible(setting.getShowToolbar());
+        checkbox_toolbar.setSelected(setting.getShowToolbar());
         setSyntax();
         setFileFilters();
         setTheme();
@@ -65,23 +75,34 @@ public class Notepad extends javax.swing.JFrame {
     private void initComponents() {
 
         settings_jd = new javax.swing.JDialog();
-        jPanel1 = new javax.swing.JPanel();
+        settings_panel = new javax.swing.JPanel();
         header = new javax.swing.JPanel();
-        exit_settingsModal = new javax.swing.JLabel();
-        jLabel1 = new javax.swing.JLabel();
+        exitSettings_btn = new javax.swing.JLabel();
+        dialogTitle = new javax.swing.JLabel();
+        editorSettingsTitle = new javax.swing.JLabel();
+        editor_separator = new javax.swing.JSeparator();
+        checkbox_lineNumbers = new javax.swing.JCheckBox();
+        displaySettingsTitle = new javax.swing.JLabel();
+        display_separator = new javax.swing.JSeparator();
         light_jrb = new javax.swing.JRadioButton();
         dark_jrb = new javax.swing.JRadioButton();
+        checkbox_toolbar = new javax.swing.JCheckBox();
         toolbar = new javax.swing.JPanel();
-        jLabel4 = new javax.swing.JLabel();
-        settings_btn = new javax.swing.JLabel();
-        jLabel3 = new javax.swing.JLabel();
+        startSpace = new javax.swing.JLabel();
+        undo_btn = new javax.swing.JButton();
+        margin3 = new javax.swing.JLabel();
+        redo_btn = new javax.swing.JButton();
+        margin2 = new javax.swing.JLabel();
         capture_btn = new javax.swing.JLabel();
+        margin1 = new javax.swing.JLabel();
+        settings_btn = new javax.swing.JButton();
         menubar = new javax.swing.JMenuBar();
         file_menu = new javax.swing.JMenu();
         newFile_jmi = new javax.swing.JMenuItem();
         openFile_jmi = new javax.swing.JMenuItem();
         saveFile_jmi = new javax.swing.JMenuItem();
         saveAs_jmi = new javax.swing.JMenuItem();
+        exit_jmi = new javax.swing.JMenuItem();
         edit_menu = new javax.swing.JMenu();
         undo_jmi = new javax.swing.JMenuItem();
         redo_jmi = new javax.swing.JMenuItem();
@@ -91,19 +112,20 @@ public class Notepad extends javax.swing.JFrame {
         cut_jmi = new javax.swing.JMenuItem();
         jSeparator1 = new javax.swing.JPopupMenu.Separator();
         selectAll_jmi = new javax.swing.JMenuItem();
+        help_menu = new javax.swing.JMenu();
+        settings_jmi = new javax.swing.JMenuItem();
 
-        settings_jd.setMaximumSize(new java.awt.Dimension(391, 459));
         settings_jd.setMinimumSize(new java.awt.Dimension(391, 459));
         settings_jd.setModal(true);
         settings_jd.setUndecorated(true);
         settings_jd.setResizable(false);
 
-        jPanel1.setBackground(new java.awt.Color(102, 102, 102));
-        jPanel1.setMaximumSize(new java.awt.Dimension(391, 459));
-        jPanel1.setMinimumSize(new java.awt.Dimension(391, 459));
-        jPanel1.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
+        settings_panel.setBackground(new java.awt.Color(195, 202, 190));
+        settings_panel.setMaximumSize(new java.awt.Dimension(391, 459));
+        settings_panel.setMinimumSize(new java.awt.Dimension(391, 459));
+        settings_panel.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
 
-        header.setBackground(new java.awt.Color(102, 102, 102));
+        header.setBackground(new java.awt.Color(195, 202, 190));
         header.addMouseMotionListener(new java.awt.event.MouseMotionAdapter() {
             public void mouseDragged(java.awt.event.MouseEvent evt) {
                 headerMouseDragged(evt);
@@ -129,61 +151,100 @@ public class Notepad extends javax.swing.JFrame {
             .addGap(0, 20, Short.MAX_VALUE)
         );
 
-        jPanel1.add(header, new org.netbeans.lib.awtextra.AbsoluteConstraints(70, 0, 300, 20));
+        settings_panel.add(header, new org.netbeans.lib.awtextra.AbsoluteConstraints(70, 0, 300, 20));
 
-        exit_settingsModal.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-        exit_settingsModal.setForeground(new java.awt.Color(255, 255, 255));
-        exit_settingsModal.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        exit_settingsModal.setText("X");
-        exit_settingsModal.addMouseListener(new java.awt.event.MouseAdapter() {
+        exitSettings_btn.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        exitSettings_btn.setForeground(new java.awt.Color(0, 0, 0));
+        exitSettings_btn.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        exitSettings_btn.setText("X");
+        exitSettings_btn.setToolTipText("Close");
+        exitSettings_btn.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
-                exit_settingsModalMouseClicked(evt);
+                exitSettings_btnMouseClicked(evt);
             }
             public void mouseEntered(java.awt.event.MouseEvent evt) {
-                exit_settingsModalMouseEntered(evt);
+                exitSettings_btnMouseEntered(evt);
             }
             public void mouseExited(java.awt.event.MouseEvent evt) {
-                exit_settingsModalMouseExited(evt);
+                exitSettings_btnMouseExited(evt);
             }
         });
-        jPanel1.add(exit_settingsModal, new org.netbeans.lib.awtextra.AbsoluteConstraints(370, 0, 22, 25));
+        settings_panel.add(exitSettings_btn, new org.netbeans.lib.awtextra.AbsoluteConstraints(370, 0, 22, 25));
 
-        jLabel1.setFont(new java.awt.Font("Roboto", 1, 14)); // NOI18N
-        jLabel1.setForeground(new java.awt.Color(255, 255, 255));
-        jLabel1.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
-        jLabel1.setText("Settings");
-        jLabel1.setVerticalAlignment(javax.swing.SwingConstants.BOTTOM);
-        jPanel1.add(jLabel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, 60, 20));
+        dialogTitle.setFont(new java.awt.Font("Roboto", 1, 14)); // NOI18N
+        dialogTitle.setForeground(new java.awt.Color(0, 0, 0));
+        dialogTitle.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
+        dialogTitle.setText("Settings");
+        dialogTitle.setVerticalAlignment(javax.swing.SwingConstants.BOTTOM);
+        settings_panel.add(dialogTitle, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, 60, 20));
 
-        light_jrb.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
-        light_jrb.setForeground(new java.awt.Color(255, 255, 255));
+        editorSettingsTitle.setFont(new java.awt.Font("Roboto", 1, 18)); // NOI18N
+        editorSettingsTitle.setForeground(new java.awt.Color(102, 102, 102));
+        editorSettingsTitle.setText("EDITOR");
+        settings_panel.add(editorSettingsTitle, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 180, -1, -1));
+
+        editor_separator.setForeground(new java.awt.Color(102, 102, 102));
+        settings_panel.add(editor_separator, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 210, 330, 10));
+
+        checkbox_lineNumbers.setForeground(new java.awt.Color(0, 0, 0));
+        checkbox_lineNumbers.setText("Show Line Numbers");
+        checkbox_lineNumbers.setDisabledIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/ui/toggle-off.png"))); // NOI18N
+        checkbox_lineNumbers.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/ui/toggle-off.png"))); // NOI18N
+        checkbox_lineNumbers.setSelectedIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/ui/toggle-on.png"))); // NOI18N
+        checkbox_lineNumbers.addChangeListener(new javax.swing.event.ChangeListener() {
+            public void stateChanged(javax.swing.event.ChangeEvent evt) {
+                checkbox_lineNumbersStateChanged(evt);
+            }
+        });
+        settings_panel.add(checkbox_lineNumbers, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 240, -1, -1));
+
+        displaySettingsTitle.setFont(new java.awt.Font("Roboto", 1, 18)); // NOI18N
+        displaySettingsTitle.setForeground(new java.awt.Color(102, 102, 102));
+        displaySettingsTitle.setText("DISPLAY");
+        settings_panel.add(displaySettingsTitle, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 280, -1, -1));
+
+        display_separator.setForeground(new java.awt.Color(102, 102, 102));
+        settings_panel.add(display_separator, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 310, 330, 10));
+
+        light_jrb.setForeground(new java.awt.Color(0, 0, 0));
         light_jrb.setText("Light Theme");
         light_jrb.addChangeListener(new javax.swing.event.ChangeListener() {
             public void stateChanged(javax.swing.event.ChangeEvent evt) {
                 light_jrbStateChanged(evt);
             }
         });
-        jPanel1.add(light_jrb, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 330, -1, -1));
+        settings_panel.add(light_jrb, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 320, -1, -1));
 
-        dark_jrb.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
-        dark_jrb.setForeground(new java.awt.Color(255, 255, 255));
+        dark_jrb.setForeground(new java.awt.Color(0, 0, 0));
         dark_jrb.setText("Dark Theme");
         dark_jrb.addChangeListener(new javax.swing.event.ChangeListener() {
             public void stateChanged(javax.swing.event.ChangeEvent evt) {
                 dark_jrbStateChanged(evt);
             }
         });
-        jPanel1.add(dark_jrb, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 360, -1, -1));
+        settings_panel.add(dark_jrb, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 350, -1, -1));
+
+        checkbox_toolbar.setForeground(new java.awt.Color(0, 0, 0));
+        checkbox_toolbar.setText("Toggle Toolbar");
+        checkbox_toolbar.setDisabledIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/ui/toggle-off.png"))); // NOI18N
+        checkbox_toolbar.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/ui/toggle-off.png"))); // NOI18N
+        checkbox_toolbar.setSelectedIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/ui/toggle-on.png"))); // NOI18N
+        checkbox_toolbar.addChangeListener(new javax.swing.event.ChangeListener() {
+            public void stateChanged(javax.swing.event.ChangeEvent evt) {
+                checkbox_toolbarStateChanged(evt);
+            }
+        });
+        settings_panel.add(checkbox_toolbar, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 220, -1, -1));
 
         javax.swing.GroupLayout settings_jdLayout = new javax.swing.GroupLayout(settings_jd.getContentPane());
         settings_jd.getContentPane().setLayout(settings_jdLayout);
         settings_jdLayout.setHorizontalGroup(
             settings_jdLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, 391, Short.MAX_VALUE)
+            .addComponent(settings_panel, javax.swing.GroupLayout.DEFAULT_SIZE, 391, Short.MAX_VALUE)
         );
         settings_jdLayout.setVerticalGroup(
             settings_jdLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(settings_panel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
@@ -192,24 +253,40 @@ public class Notepad extends javax.swing.JFrame {
         setPreferredSize(new java.awt.Dimension(890, 530));
 
         toolbar.setBackground(new java.awt.Color(51, 51, 51));
-        toolbar.setMinimumSize(new java.awt.Dimension(808, 45));
-        toolbar.setPreferredSize(new java.awt.Dimension(808, 45));
+        toolbar.setMinimumSize(new java.awt.Dimension(808, 28));
+        toolbar.setPreferredSize(new java.awt.Dimension(808, 28));
         toolbar.setLayout(new javax.swing.BoxLayout(toolbar, javax.swing.BoxLayout.X_AXIS));
 
-        jLabel4.setText("    ");
-        toolbar.add(jLabel4);
+        startSpace.setText("    ");
+        toolbar.add(startSpace);
 
-        settings_btn.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/dark/gears.png"))); // NOI18N
-        settings_btn.setToolTipText("Settings");
-        settings_btn.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                settings_btnMouseClicked(evt);
+        undo_btn.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/dark/undo.png"))); // NOI18N
+        undo_btn.setToolTipText("Undo");
+        undo_btn.setBorderPainted(false);
+        undo_btn.setContentAreaFilled(false);
+        undo_btn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                undo_btnActionPerformed(evt);
             }
         });
-        toolbar.add(settings_btn);
+        toolbar.add(undo_btn);
 
-        jLabel3.setText("    ");
-        toolbar.add(jLabel3);
+        margin3.setText("    ");
+        toolbar.add(margin3);
+
+        redo_btn.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/dark/redo.png"))); // NOI18N
+        redo_btn.setToolTipText("Redo");
+        redo_btn.setBorderPainted(false);
+        redo_btn.setContentAreaFilled(false);
+        redo_btn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                redo_btnActionPerformed(evt);
+            }
+        });
+        toolbar.add(redo_btn);
+
+        margin2.setText("    ");
+        toolbar.add(margin2);
 
         capture_btn.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/dark/photo-capture.png"))); // NOI18N
         capture_btn.setToolTipText("Screenshot");
@@ -219,6 +296,20 @@ public class Notepad extends javax.swing.JFrame {
             }
         });
         toolbar.add(capture_btn);
+
+        margin1.setText("    ");
+        toolbar.add(margin1);
+
+        settings_btn.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/dark/gears.png"))); // NOI18N
+        settings_btn.setToolTipText("Settings");
+        settings_btn.setBorderPainted(false);
+        settings_btn.setContentAreaFilled(false);
+        settings_btn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                settings_btnActionPerformed(evt);
+            }
+        });
+        toolbar.add(settings_btn);
 
         getContentPane().add(toolbar, java.awt.BorderLayout.PAGE_START);
 
@@ -259,6 +350,15 @@ public class Notepad extends javax.swing.JFrame {
             }
         });
         file_menu.add(saveAs_jmi);
+
+        exit_jmi.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_ESCAPE, java.awt.event.InputEvent.SHIFT_DOWN_MASK));
+        exit_jmi.setText("Exit");
+        exit_jmi.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                exit_jmiActionPerformed(evt);
+            }
+        });
+        file_menu.add(exit_jmi);
 
         menubar.add(file_menu);
 
@@ -321,6 +421,19 @@ public class Notepad extends javax.swing.JFrame {
         edit_menu.add(selectAll_jmi);
 
         menubar.add(edit_menu);
+
+        help_menu.setText("Help");
+
+        settings_jmi.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_COMMA, java.awt.event.InputEvent.CTRL_DOWN_MASK));
+        settings_jmi.setText("Settings");
+        settings_jmi.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                settings_jmiActionPerformed(evt);
+            }
+        });
+        help_menu.add(settings_jmi);
+
+        menubar.add(help_menu);
 
         setJMenuBar(menubar);
 
@@ -429,24 +542,18 @@ public class Notepad extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_saveAs_jmiActionPerformed
 
-    private void settings_btnMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_settings_btnMouseClicked
-        settings_jd.setLocationRelativeTo(this);
-        settings_jd.pack();
-        settings_jd.setVisible(true);
-    }//GEN-LAST:event_settings_btnMouseClicked
-
-    private void exit_settingsModalMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_exit_settingsModalMouseClicked
+    private void exitSettings_btnMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_exitSettings_btnMouseClicked
         settings_jd.dispose();
-    }//GEN-LAST:event_exit_settingsModalMouseClicked
+    }//GEN-LAST:event_exitSettings_btnMouseClicked
 
-    private void exit_settingsModalMouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_exit_settingsModalMouseEntered
-        exit_settingsModal.setOpaque(true);
-        exit_settingsModal.setBackground(Color.decode("#FA3D3E"));
-    }//GEN-LAST:event_exit_settingsModalMouseEntered
+    private void exitSettings_btnMouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_exitSettings_btnMouseEntered
+        exitSettings_btn.setOpaque(true);
+        exitSettings_btn.setBackground(Color.decode("#FA3D3E"));
+    }//GEN-LAST:event_exitSettings_btnMouseEntered
 
-    private void exit_settingsModalMouseExited(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_exit_settingsModalMouseExited
-        exit_settingsModal.setBackground(new Color(51, 51, 51));
-    }//GEN-LAST:event_exit_settingsModalMouseExited
+    private void exitSettings_btnMouseExited(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_exitSettings_btnMouseExited
+        exitSettings_btn.setBackground(Color.decode("#C3CABE"));
+    }//GEN-LAST:event_exitSettings_btnMouseExited
 
     private void headerMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_headerMousePressed
         mouse = evt.getPoint();
@@ -476,6 +583,7 @@ public class Notepad extends javax.swing.JFrame {
             setting.setIsDarkTheme(false);
             setTheme();
         }
+        setting.saveToFile();
     }//GEN-LAST:event_light_jrbStateChanged
 
     private void dark_jrbStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_dark_jrbStateChanged
@@ -488,6 +596,7 @@ public class Notepad extends javax.swing.JFrame {
             setting.setIsDarkTheme(true);
             setTheme();
         }
+        setting.saveToFile();
     }//GEN-LAST:event_dark_jrbStateChanged
 
     private void copy_jmiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_copy_jmiActionPerformed
@@ -518,7 +627,7 @@ public class Notepad extends javax.swing.JFrame {
 
     private void capture_btnMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_capture_btnMouseClicked
         try {
-            
+
             Dimension dimension = textArea.getPreferredSize();
             textArea.getCaret().setVisible(false);
             BufferedImage img = new BufferedImage(dimension.width, dimension.height, BufferedImage.TYPE_INT_RGB);
@@ -528,7 +637,7 @@ public class Notepad extends javax.swing.JFrame {
             textArea.printAll(g2);
             g2.dispose();
 
-           JFileChooser chooserImage = new JFileChooser();
+            JFileChooser chooserImage = new JFileChooser();
             chooserImage.setDialogTitle("Guardar imagen");
             chooserImage.setFileFilter(new FileNameExtensionFilter("PNG File (*.png)", "png"));
 
@@ -539,7 +648,7 @@ public class Notepad extends javax.swing.JFrame {
                 if (!selectedFile.getName().toLowerCase().endsWith(".png")) {
                     selectedFile = new File(selectedFile.getAbsolutePath() + ".png");
                 }
-                
+
                 ImageIO.write(img, "png", selectedFile);
                 JOptionPane.showMessageDialog(this, "Imagen guardada en:\n" + selectedFile.getAbsolutePath());
             }
@@ -547,8 +656,42 @@ public class Notepad extends javax.swing.JFrame {
             Logger.getLogger(Notepad.class.getName()).log(Level.SEVERE, null, ex);
             JOptionPane.showMessageDialog(this, "Error al guardar la imagen: " + ex.getMessage());
         }
-        textArea.getCaret().setVisible(true); 
+        textArea.getCaret().setVisible(true);
     }//GEN-LAST:event_capture_btnMouseClicked
+
+    private void checkbox_lineNumbersStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_checkbox_lineNumbersStateChanged
+        setting.setShowLineNumbers(checkbox_lineNumbers.isSelected());
+        scrollPane.setLineNumbersEnabled(setting.getShowLineNumbers());
+        setting.saveToFile();
+    }//GEN-LAST:event_checkbox_lineNumbersStateChanged
+
+    private void checkbox_toolbarStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_checkbox_toolbarStateChanged
+        setting.setShowToolbar(checkbox_toolbar.isSelected());
+        toolbar.setVisible(setting.getShowToolbar());
+        setting.saveToFile();
+    }//GEN-LAST:event_checkbox_toolbarStateChanged
+
+    private void settings_jmiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_settings_jmiActionPerformed
+        settings_jd.setLocationRelativeTo(this);
+        settings_jd.pack();
+        settings_jd.setVisible(true);
+    }//GEN-LAST:event_settings_jmiActionPerformed
+
+    private void redo_btnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_redo_btnActionPerformed
+        redo_jmiActionPerformed(evt);
+    }//GEN-LAST:event_redo_btnActionPerformed
+
+    private void undo_btnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_undo_btnActionPerformed
+        undo_jmiActionPerformed(evt);
+    }//GEN-LAST:event_undo_btnActionPerformed
+
+    private void settings_btnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_settings_btnActionPerformed
+        settings_jmiActionPerformed(evt);
+    }//GEN-LAST:event_settings_btnActionPerformed
+
+    private void exit_jmiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exit_jmiActionPerformed
+        System.exit(0);
+    }//GEN-LAST:event_exit_jmiActionPerformed
 
     private void setTheme() {
         if (setting.isDarkTheme()) {
@@ -563,6 +706,8 @@ public class Notepad extends javax.swing.JFrame {
             scrollPane.getGutter().setLineNumberColor(Color.decode("#999999"));
 
             toolbar.setBackground(new Color(51, 51, 51));
+            undo_btn.setIcon(new ImageIcon(getClass().getResource("/icons/dark/undo.png")));
+            redo_btn.setIcon(new ImageIcon(getClass().getResource("/icons/dark/redo.png")));
             settings_btn.setIcon(new ImageIcon(getClass().getResource("/icons/dark/gears.png")));
             capture_btn.setIcon(new ImageIcon(getClass().getResource("/icons/dark/photo-capture.png")));
         } else {
@@ -577,6 +722,8 @@ public class Notepad extends javax.swing.JFrame {
             scrollPane.getGutter().setLineNumberColor(Color.decode("#787878"));
 
             toolbar.setBackground(Color.WHITE);
+            undo_btn.setIcon(new ImageIcon(getClass().getResource("/icons/light/undo.png")));
+            redo_btn.setIcon(new ImageIcon(getClass().getResource("/icons/light/redo.png")));
             settings_btn.setIcon(new ImageIcon(getClass().getResource("/icons/light/gears.png")));
             capture_btn.setIcon(new ImageIcon(getClass().getResource("/icons/light/photo-capture.png")));
         }
@@ -589,6 +736,11 @@ public class Notepad extends javax.swing.JFrame {
             }
         } catch (javax.swing.UnsupportedLookAndFeelException ex) {
             System.err.println("Error al cargar tema inicial: " + ex.getMessage());
+        }
+
+        if (fileChooser != null) {
+            fileChooser = new JFileChooser();
+            setFileFilters();
         }
 
         SwingUtilities.updateComponentTreeUI(this);
@@ -665,31 +817,44 @@ public class Notepad extends javax.swing.JFrame {
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel capture_btn;
+    private javax.swing.JCheckBox checkbox_lineNumbers;
+    private javax.swing.JCheckBox checkbox_toolbar;
     private javax.swing.JMenuItem copy_jmi;
     private javax.swing.JMenuItem cut_jmi;
     private javax.swing.JRadioButton dark_jrb;
+    private javax.swing.JLabel dialogTitle;
+    private javax.swing.JLabel displaySettingsTitle;
+    private javax.swing.JSeparator display_separator;
     private javax.swing.JMenu edit_menu;
-    private javax.swing.JLabel exit_settingsModal;
+    private javax.swing.JLabel editorSettingsTitle;
+    private javax.swing.JSeparator editor_separator;
+    private javax.swing.JLabel exitSettings_btn;
+    private javax.swing.JMenuItem exit_jmi;
     private javax.swing.JMenu file_menu;
     private javax.swing.JPanel header;
-    private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel3;
-    private javax.swing.JLabel jLabel4;
-    private javax.swing.JPanel jPanel1;
+    private javax.swing.JMenu help_menu;
     private javax.swing.JPopupMenu.Separator jSeparator1;
     private javax.swing.JPopupMenu.Separator jSeparator2;
     private javax.swing.JRadioButton light_jrb;
+    private javax.swing.JLabel margin1;
+    private javax.swing.JLabel margin2;
+    private javax.swing.JLabel margin3;
     private javax.swing.JMenuBar menubar;
     private javax.swing.JMenuItem newFile_jmi;
     private javax.swing.JMenuItem openFile_jmi;
     private javax.swing.JMenuItem paste_jmi;
+    private javax.swing.JButton redo_btn;
     private javax.swing.JMenuItem redo_jmi;
     private javax.swing.JMenuItem saveAs_jmi;
     private javax.swing.JMenuItem saveFile_jmi;
     private javax.swing.JMenuItem selectAll_jmi;
-    private javax.swing.JLabel settings_btn;
+    private javax.swing.JButton settings_btn;
     private javax.swing.JDialog settings_jd;
+    private javax.swing.JMenuItem settings_jmi;
+    private javax.swing.JPanel settings_panel;
+    private javax.swing.JLabel startSpace;
     private javax.swing.JPanel toolbar;
+    private javax.swing.JButton undo_btn;
     private javax.swing.JMenuItem undo_jmi;
     // End of variables declaration//GEN-END:variables
 }
